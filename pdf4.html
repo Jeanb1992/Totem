@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador PDF</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            min-height: 100vh;
+            background-color: #000;
+            overflow-x: hidden;
+            overflow-y: scroll;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+
+        /* Ocultar scrollbar para Chrome, Safari y Opera */
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
+        .pdf-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            min-height: 100vh;
+            border: none;
+        }
+
+        .home-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 80px;
+            height: auto;
+            cursor: pointer;
+            transition: transform 0.2s;
+            z-index: 2;
+        }
+
+        .home-button:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <object 
+        data="src/img/pdfs/salud.pdf#toolbar=0&navpanes=0&scrollbar=1&view=FitH" 
+        type="application/pdf" 
+        class="pdf-container">
+    </object>
+    <a href="index.html">
+        <img src="src/img/Recurso 8.png" alt="Volver al inicio" class="home-button">
+    </a>
+</body>
+</html> 

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Tótem Interactivo</title>
+        
+        <!-- PWA Meta Tags -->
+        <meta name="theme-color" content="#000000">
+        <meta name="description" content="Aplicación interactiva con información y grabación de audio">
+        <link rel="manifest" href="manifest.json">
+        <link rel="icon" type="image/png" sizes="192x192" href="src/img/icon-192.png">
+        <link rel="apple-touch-icon" href="src/img/icon-192.png">
+        
+        <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                width: 100vw;
+                min-height: 100vh;
+                background-color: #000;
+                overflow-x: hidden;
+                overflow-y: scroll;
+                scrollbar-width: none; /* Firefox */
+                -ms-overflow-style: none; /* IE and Edge */
+            }
+
+            /* Ocultar scrollbar para Chrome, Safari y Opera */
+            body::-webkit-scrollbar {
+                display: none;
+            }
+
+            .container {
+                width: 100%;
+                position: relative;
+                margin: 0;
+            }
+
+            .background-image {
+                width: 100%;
+                height: auto;
+                display: block;
+            }
+
+            /* Estilo base para los botones */
+            .boton {
+                position: absolute;
+                cursor: pointer;
+                transition: transform 0.2s;
+                height: auto;
+            }
+
+            /* Tamaño específico para los primeros 4 botones */
+            .button-1, .button-2, .button-3, .button-4 {
+                width: 15%; /* Porcentaje relativo al contenedor */
+                min-width: 40px; /* Tamaño mínimo más pequeño */
+                max-width: 300px; /* Tamaño máximo para evitar botones muy grandes */
+            }
+
+            /* Tamaño específico para el botón de grabación */
+            .button-5 {
+                width: 22%; /* Un poco más grande que los otros botones */
+                min-width: 60px;
+                max-width: 400px;
+            }
+
+            /* Posicionamiento de botones específicos */
+            .button-4 {
+                bottom: 10%;
+                right: 70.5%; /* Botón más a la izquierda */
+            }
+
+            .button-1 {
+                bottom: 10%;
+                right: 52%; /* Segundo desde la izquierda */
+            }
+
+            .button-3 {
+                bottom: 10%;
+                right: 33.5%; /* Tercero desde la izquierda */
+            }
+
+            .button-2 {
+                bottom: 10%;
+                right: 15%; /* Botón más a la derecha */
+            }
+
+            .button-5 {
+                top: 55%;
+                left: 39%;
+            }
+
+            /* Efecto hover mejorado para los botones */
+            .boton:hover {
+                transform: scale(1.2);
+                transition: transform 0.3s ease;
+            }
+
+            /* Área para debugging */
+            .debug-grid {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                display: grid;
+                grid-template-columns: repeat(12, 1fr);
+                grid-template-rows: repeat(6, 1fr);
+                opacity: 0.3;
+                pointer-events: none;
+                display: none; /* Activar solo durante desarrollo */
+            }
+
+            /* Agregamos estilos para indicador de grabación */
+            .grabando {
+                animation: pulsar 1.5s infinite;
+            }
+
+            @keyframes pulsar {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+                100% { transform: scale(1); }
+            }
+
+            /* Estilos para el indicador de grabación */
+            .indicador-grabacion {
+                position: absolute;
+                width: 4%;
+                min-width: 10px;
+                max-width: 40px;
+                height: auto;
+                aspect-ratio: 1/1;
+                background-color: red;
+                border-radius: 50%;
+                left: calc(37% + 20%); /* Ajustado para el nuevo tamaño del botón */
+                top: 55%;
+                display: none;
+                animation: parpadeo 1s infinite;
+            }
+
+            @keyframes parpadeo {
+                0% { opacity: 1; }
+                50% { opacity: 0.5; }
+                100% { opacity: 1; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <img src="src/img/Recurso 10.png" alt="Fondo Tótem" class="background-image">
+            <!-- Botones interactivos con enlaces -->
+            <a href="pdf2.html"><img src="src/img/Recurso 2.png" alt="Tótem Interactivo" class="boton button-1"></a>
+            <a href="pdf4.html"><img src="src/img/Recurso 3.png" alt="Tótem Interactivo" class="boton button-2"></a>
+            <a href="pdf3.html"><img src="src/img/Recurso 4.png" alt="Tótem Interactivo" class="boton button-3"></a>
+            <a href="pdf1.html"><img src="src/img/Recurso 5.png" alt="Tótem Interactivo" class="boton button-4"></a>
+            <img src="src/img/Recurso 6.png" alt="Grabar Audio" class="boton button-5" id="botonGrabar">
+            <div id="indicadorGrabacion" class="indicador-grabacion"></div>
+        </div>
+
+        <script>
+            let mediaRecorder;
+            let chunks = [];
+            const botonGrabar = document.getElementById('botonGrabar');
+            const indicadorGrabacion = document.getElementById('indicadorGrabacion');
+
+            // Función para convertir a MP3
+            async function convertToMP3(audioData) {
+                const audioContext = new AudioContext();
+                const audioBuffer = await audioContext.decodeAudioData(await audioData.arrayBuffer());
+                
+                const mp3Encoder = new lamejs.Mp3Encoder(1, audioBuffer.sampleRate, 128);
+                const samples = audioBuffer.getChannelData(0);
+                const sampleSize = 1152;
+                const mp3Data = [];
+
+                for (let i = 0; i < samples.length; i += sampleSize) {
+                    const sampleChunk = samples.slice(i, i + sampleSize);
+                    const mp3buf = mp3Encoder.encodeBuffer(convertFloat32ToInt16(sampleChunk));
+                    if (mp3buf.length > 0) {
+                        mp3Data.push(mp3buf);
+                    }
+                }
+
+                const end = mp3Encoder.flush();
+                if (end.length > 0) {
+                    mp3Data.push(end);
+                }
+
+                return new Blob(mp3Data, { type: 'audio/mp3' });
+            }
+
+            // Función auxiliar para convertir formato de audio
+            function convertFloat32ToInt16(float32Array) {
+                const int16Array = new Int16Array(float32Array.length);
+                for (let i = 0; i < float32Array.length; i++) {
+                    const s = Math.max(-1, Math.min(1, float32Array[i]));
+                    int16Array[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+                }
+                return int16Array;
+            }
+
+            botonGrabar.addEventListener('click', async () => {
+                try {
+                    if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        mediaRecorder = new MediaRecorder(stream);
+                        
+                        mediaRecorder.ondataavailable = (e) => {
+                            chunks.push(e.data);
+                        };
+
+                        mediaRecorder.onstop = async () => {
+                            const blob = new Blob(chunks, { type: 'audio/webm' });
+                            chunks = [];
+                            
+                            try {
+                                // Convertir a MP3
+                                const mp3Blob = await convertToMP3(blob);
+                                
+                                // Crear nombre de archivo con fecha y hora
+                                const fecha = new Date();
+                                const nombreArchivo = `respuestas/grabaciones/${fecha.getFullYear()}-${(fecha.getMonth()+1).toString().padStart(2,'0')}-${fecha.getDate().toString().padStart(2,'0')}_${fecha.getHours().toString().padStart(2,'0')}-${fecha.getMinutes().toString().padStart(2,'0')}-${fecha.getSeconds().toString().padStart(2,'0')}.mp3`;
+                                
+                                // Crear enlace de descarga
+                                const audioUrl = URL.createObjectURL(mp3Blob);
+                                const link = document.createElement('a');
+                                link.href = audioUrl;
+                                link.download = nombreArchivo;
+                                link.click();
+                                
+                                // Limpiar recursos
+                                URL.revokeObjectURL(audioUrl);
+                                botonGrabar.classList.remove('grabando');
+                                indicadorGrabacion.style.display = 'none';
+                            } catch (error) {
+                                console.error('Error al convertir a MP3:', error);
+                                alert('Error al convertir el audio a MP3');
+                            }
+                        };
+
+                        mediaRecorder.start();
+                        botonGrabar.classList.add('grabando');
+                        indicadorGrabacion.style.display = 'block';
+                    } else {
+                        mediaRecorder.stop();
+                        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                        indicadorGrabacion.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Error al acceder al micrófono:', error);
+                    alert('No se pudo acceder al micrófono. Por favor, verifica los permisos.');
+                }
+            });
+        </script>
+
+        <!-- Service Worker Registration -->
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then(registration => {
+                            console.log('Service Worker registrado con éxito:', registration);
+                        })
+                        .catch(error => {
+                            console.log('Error al registrar el Service Worker:', error);
+                        });
+                });
+            }
+        </script>
+    </body>
+</html>
