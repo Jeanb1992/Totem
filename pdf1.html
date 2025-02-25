@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Visualizador PDF</title>
     <style>
         body {
@@ -29,6 +29,12 @@
             width: 100vw;
             min-height: 100vh;
             border: none;
+            touch-action: pan-y; /* Solo permite scroll vertical */
+            -webkit-user-select: none; /* Previene selección de texto */
+            -webkit-touch-callout: none; /* Previene menú contextual en iOS */
+            user-select: none;
+            -ms-user-select: none;
+            -moz-user-select: none;
         }
 
         .home-button {
@@ -49,7 +55,7 @@
 </head>
 <body>
     <object 
-        data="src/img/pdfs/Fatiga.pdf#toolbar=0&navpanes=0&scrollbar=1&view=FitH" 
+        data="src/img/pdfs/Fatiga.pdf#toolbar=0&navpanes=0&scrollbar=1&view=FitH&zoom=page-fit&zoom=100" 
         type="application/pdf" 
         class="pdf-container">
     </object>
