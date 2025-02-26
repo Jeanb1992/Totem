@@ -29,6 +29,25 @@
             width: 100vw;
             min-height: 100vh;
             border: none;
+            touch-action: pan-y; /* Solo permite scroll vertical */
+            -webkit-user-select: none; /* Previene selección de texto */
+            -webkit-touch-callout: none; /* Previene menú contextual en iOS */
+            user-select: none;
+            -ms-user-select: none;
+            -moz-user-select: none;
+            pointer-events: none; /* Previene interacciones con el PDF */
+        }
+
+        /* Contenedor adicional para permitir scroll */
+        .scroll-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow-y: scroll;
+            pointer-events: auto; /* Permite scroll */
+            -webkit-overflow-scrolling: touch;
         }
 
         .home-button {
@@ -48,11 +67,13 @@
     </style>
 </head>
 <body>
-    <object 
-        data="src/img/pdfs/Interacciones.pdf#toolbar=0&navpanes=0&scrollbar=1&view=FitH&zoom=page-fit&zoom=100" 
-        type="application/pdf" 
-        class="pdf-container">
-    </object>
+    <div class="scroll-container">
+        <object 
+            data="src/img/pdfs/Interacciones.pdf#toolbar=0&navpanes=0&scrollbar=0&view=FitH&zoom=page-fit&zoom=100&pagemode=none&scrollbar=0" 
+            type="application/pdf" 
+            class="pdf-container">
+        </object>
+    </div>
     <a href="index.html">
         <img src="src/img/Recurso 8.png" alt="Volver al inicio" class="home-button">
     </a>
