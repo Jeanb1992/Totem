@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Meta tag adicional para prevenir zoom -->
-    <meta http-equiv="ScreenOrientation" content="autoRotate:disabled">
     <title>Visualizador PDF</title>
     <style>
         body {
@@ -15,52 +13,43 @@
             background-color: #000;
             overflow-x: hidden;
             overflow-y: scroll;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
 
-        /* Ocultar scrollbar para Chrome, Safari y Opera */
         body::-webkit-scrollbar {
             display: none;
         }
 
         .pdf-container {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100vw;
-            min-height: 100vh;
-            border: none;
-            touch-action: pan-y;
-            -webkit-user-select: none;
-            -webkit-touch-callout: none;
-            user-select: none;
-            -ms-user-select: none;
-            -moz-user-select: none;
-            pointer-events: none;
-            -webkit-user-modify: read-only !important;
-            -webkit-transform: scale(1) !important;
-            transform: scale(1) !important;
-            zoom: 100% !important;
+            position: relative;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        /* Contenedor adicional para permitir scroll */
-        .scroll-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            overflow-y: scroll;
-            pointer-events: auto; /* Permite scroll */
-            -webkit-overflow-scrolling: touch;
+        .pdf-page {
+            width: 100vw;
+            height: auto;
+            display: block;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            pointer-events: none;
+            object-fit: contain;
+            margin: 0;
+            padding: 0;
         }
 
         .home-button {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 80px;
+            top: 0%;
+            right: 0%;
+            width: 4%;
             height: auto;
             cursor: pointer;
             transition: transform 0.2s;
@@ -71,62 +60,10 @@
             transform: scale(1.1);
         }
     </style>
-    <script>
-        // Función para prevenir zoom
-        function preventZoom(e) {
-            e.preventDefault();
-            document.body.style.zoom = "100%";
-            return false;
-        }
-
-        // Prevenir zoom con Ctrl + scroll
-        document.addEventListener('wheel', preventZoom, { passive: false });
-        document.addEventListener('mousewheel', preventZoom, { passive: false });
-        document.addEventListener('DOMMouseScroll', preventZoom, { passive: false });
-
-        // Prevenir zoom con Ctrl + +/-
-        document.addEventListener('keydown', function(e) {
-            if((e.ctrlKey || e.metaKey) && (e.key === '+' || e.key === '-' || e.key === '=' || e.which === 187 || e.which === 189)) {
-                e.preventDefault();
-                return false;
-            }
-        });
-
-        // Prevenir gestos de trackpad y pinch zoom
-        document.addEventListener('gesturestart', preventZoom);
-        document.addEventListener('gesturechange', preventZoom);
-        document.addEventListener('gestureend', preventZoom);
-
-        // Prevenir menú contextual
-        document.addEventListener('contextmenu', preventZoom);
-
-        // Mantener zoom en 100%
-        window.addEventListener('resize', function() {
-            document.body.style.zoom = "100%";
-        });
-
-        // Inicialización
-        window.onload = function() {
-            // Forzar zoom 100%
-            document.body.style.zoom = "100%";
-            
-            // Prevenir zoom en el PDF específicamente
-            const pdfContainer = document.querySelector('.pdf-container');
-            if(pdfContainer) {
-                pdfContainer.addEventListener('wheel', preventZoom, { passive: false });
-                pdfContainer.addEventListener('mousewheel', preventZoom, { passive: false });
-                pdfContainer.addEventListener('DOMMouseScroll', preventZoom, { passive: false });
-            }
-        };
-    </script>
 </head>
 <body>
-    <div class="scroll-container">
-        <object 
-            data="src/img/pdfs/Rash.pdf#toolbar=0&navpanes=0&scrollbar=0&view=FitH&zoom=page-fit&zoom=100&pagemode=none&scrollbar=0" 
-            type="application/pdf" 
-            class="pdf-container">
-        </object>
+    <div class="pdf-container">
+        <img src="src/img/pdfs/Rash-1.png" alt="Rash" class="pdf-page">
     </div>
     <a href="index.html">
         <img src="src/img/Recurso 8.png" alt="Volver al inicio" class="home-button">
